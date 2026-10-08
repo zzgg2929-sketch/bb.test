@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>연말정산 의료비 세액공제 시뮬레이터</title>
+    <style>
+        :root {
+            --bg-color: #f0fdf4; /* 상쾌하고 밝은 연두/그린빛 배경 */
+            --card-bg: #ffffff;
+            --primary-color: #059669; /* 산뜻한 에메랄드 그린 */
+            --text-main: #111827;
+            --text-muted: #4b5563;
+            --border-color: #d1d5db;
+            --accent-bg: #ecfdf5;
+            --accent-text: #047857;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            border: 1px solid #e2e8f0;
+        }
+        h2 { font-size: 20px; font-weight: 700; margin-bottom: 24px; color: var(--text-main); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+        .card { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
+        .card-title { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
+        .card-value { font-size: 18px; font-weight: 700; }
+        .card-value.highlight { color: var(--primary-color); }
+        .input-group { margin-bottom: 24px; }
+        .input-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .input-title { font-size: 14px; font-weight: 600; }
+        .input-value { font-size: 16px; font-weight: 700; color: var(--primary-color); }
+        input[type="range"] { width: 100%; -webkit-appearance: none; background: #cbd5e1; height: 8px; border-radius: 4px; outline: none; margin-top: 8px; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--primary-color); cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .details-table { border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 24px; background-color: #ffffff; }
+        .table-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
+        .table-row:last-child { border-bottom: none; }
+        .table-label { color: var(--text-muted); }
+        .table-value { font-weight: 600; color: #1e293b; }
+        .info-box { background-color: var(--accent-bg); color: var(--accent-text); padding: 12px; border-radius: 8px; font-size: 13px; font-weight: 600; text-align: center; margin-bottom: 16px; border: 1px solid #a7f3d0; }
+        .footer-note { font-size: 11px; color: var(--text-muted); text-align: center; line-height: 1.4; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🏥 의료비 세액공제 계산기</h2>
+
+    <!-- 상단 요약 카드 -->
+    <div class="grid">
+        <div class="card">
+            <div class="card-title">예상 세액공제액</div>
+            <div class="card-value highlight" id="card-tax-credit">0원</div>
+        </div>
+        <div class="card">
+            <div class="card-title">적용 공제율</div>
+            <div class="card-value" id="card-rate">15%</div>
+        </div>
+    </div>
+
+    <!-- 입력 1: 총급여액 -->
+    <div class="input-group">
+        <div class="input-label-row">
+            <span class="input-title">총급여액</span>
+            <span class="input-value" id="val-salary">5,000만 원</span>
+        </div>
+        <input type="range" id="input-salary" min="1000" max="15000" step="100" value="5000">
+    </div>
+
+    <!-- 입력 2: 지출 의료비 -->
+    <div class="input-group">
+        <div class="input-label-row">
+            <span class="input-title">연간 지출 의료비 총액</span>
+            <span class="input-value" id="val-expense">300만 원</span>
+        </div>
+        <input type="range" id="input-expense" min="0" max="3000" step="50" value="300">
+    </div>
+
+    <!-- 상세 계산 내역 -->
+    <div class="details-table">
+        <div class="table-row">
+            <span class="table-label">총급여의 3% 문턱 금액</span>
+            <span class="table-value" id="lbl-threshold">150만 원</span>
+        </div>
+        <div class="table-row">
+            <span class="table-label">공제 대상 의료비 (초과분)</span>
+            <span class="table-value" id="lbl-excess">150만 원</span>
+        </div>
+        <div class="table-row">
+            <span class="table-label">기본 한도 적용</span>
+            <span class="table-value">연 700만 원 한도</span>
+        </div>
+    </div>
+
+    <div class="info-box">
+        💡 총급여액의 3%를 초과한 의료비부터 15% 세액공제가 적용됩니다.
+    </div>
+
+    <div class="footer-note">
+        ※ 본 시뮬레이터는 직원 안내용 간이 계산기이며, 세부 공제 대상에 따라 실제 환급액과 차이가 있을 수 있습니다.
+    </div>
+</div>
+
+<script>
+    const inputSalary = document.getElementById('input-salary');
+    const inputExpense = document.getElementById('input-expense');
+
+    function formatWon(val) {
+        if (val === 0) return "0원";
+        if (val >= 10000) {
+            const eok = Math.floor(val / 10000);
+            const man = val % 10000;
+            return man > 0 ? `${eok}억 ${man.toLocaleString()}만 원` : `${eok}억 원`;
+        }
+        return `${val.toLocaleString()}만 원`;
+    }
+
+    function calculate() {
+        const salaryMan = parseInt(inputSalary.value);
+        const expenseMan = parseInt(inputExpense.value);
+
+        const salary = salaryMan * 10000;
+        const expense = expenseMan * 10000;
+
+        document.getElementById('val-salary').innerText = formatWon(salaryMan);
+        document.getElementById('val-expense').innerText = formatWon(expenseMan);
+
+        const threshold = salary * 0.03;
+        document.getElementById('lbl-threshold').innerText = formatWon(Math.round(threshold / 10000));
+
+        let excess = expense - threshold;
+        if (excess < 0) excess = 0;
+        document.getElementById('lbl-excess').innerText = formatWon(Math.round(excess / 10000));
+
+        const limit = 7000000;
+        let targetAmount = excess;
+        if (targetAmount > limit) {
+            targetAmount = limit;
+        }
+
+        const taxCredit = targetAmount * 0.15;
+        document.getElementById('card-tax-credit').innerText = taxCredit > 0 ? `${Math.round(taxCredit / 10000).toLocaleString()}만 원` : "0원";
+    }
+
+    inputSalary.addEventListener('input', calculate);
+    inputExpense.addEventListener('input', calculate);
+
+    calculate();
+</script>
+
+</body>
+</html>
