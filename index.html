@@ -6,9 +6,9 @@
     <title>연말정산 의료비 세액공제 시뮬레이터</title>
     <style>
         :root {
-            --bg-color: #f0fdf4; /* 상쾌하고 밝은 연두/그린빛 배경 */
+            --bg-color: #f0fdf4;
             --card-bg: #ffffff;
-            --primary-color: #059669; /* 산뜻한 에메랄드 그린 */
+            --primary-color: #059669;
             --text-main: #111827;
             --text-muted: #4b5563;
             --border-color: #d1d5db;
@@ -71,33 +71,33 @@
         </div>
     </div>
 
-    <!-- 입력 1: 총급여액 -->
+    <!-- 입력 1: 총급여액 (최대 10억, 기본 10억) -->
     <div class="input-group">
         <div class="input-label-row">
             <span class="input-title">총급여액</span>
-            <span class="input-value" id="val-salary">5,000만 원</span>
+            <span class="input-value" id="val-salary">10억 원</span>
         </div>
-        <input type="range" id="input-salary" min="1000" max="15000" step="100" value="5000">
+        <input type="range" id="input-salary" min="1000" max="100000" step="500" value="100000">
     </div>
 
-    <!-- 입력 2: 지출 의료비 -->
+    <!-- 입력 2: 지출 의료비 (최대 1억, 기본 1억) -->
     <div class="input-group">
         <div class="input-label-row">
             <span class="input-title">연간 지출 의료비 총액</span>
-            <span class="input-value" id="val-expense">300만 원</span>
+            <span class="input-value" id="val-expense">1억 원</span>
         </div>
-        <input type="range" id="input-expense" min="0" max="3000" step="50" value="300">
+        <input type="range" id="input-expense" min="0" max="10000" step="100" value="10000">
     </div>
 
     <!-- 상세 계산 내역 -->
     <div class="details-table">
         <div class="table-row">
             <span class="table-label">총급여의 3% 문턱 금액</span>
-            <span class="table-value" id="lbl-threshold">150만 원</span>
+            <span class="table-value" id="lbl-threshold">0원</span>
         </div>
         <div class="table-row">
             <span class="table-label">공제 대상 의료비 (초과분)</span>
-            <span class="table-value" id="lbl-excess">150만 원</span>
+            <span class="table-value" id="lbl-excess">0원</span>
         </div>
         <div class="table-row">
             <span class="table-label">기본 한도 적용</span>
@@ -139,11 +139,11 @@
         document.getElementById('val-expense').innerText = formatWon(expenseMan);
 
         const threshold = salary * 0.03;
-        document.getElementById('lbl-threshold').innerText = formatWon(Math.round(threshold / 10000));
+        document.getElementById('lbl-threshold').innerText = Math.round(threshold / 10000).toLocaleString() + "만 원";
 
         let excess = expense - threshold;
         if (excess < 0) excess = 0;
-        document.getElementById('lbl-excess').innerText = formatWon(Math.round(excess / 10000));
+        document.getElementById('lbl-excess').innerText = Math.round(excess / 10000).toLocaleString() + "만 원";
 
         const limit = 7000000;
         let targetAmount = excess;
